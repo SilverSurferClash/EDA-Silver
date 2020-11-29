@@ -11,6 +11,109 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(tidymodels)
+library(DataExplorer)
+
+```
+
+
+```{r}
+
+telecom_csv <- read_csv("telecom.csv")
+
+day_csv <-read_csv("day.csv")
+bikes <- read_csv("hour.csv")
+
+```
+
+
+Visualise the Distributions of the data
+```{r}
+bikes %>% 
+    select(-instant, -dteday) %>% # select the columns to plot
+    pivot_longer(everything()) %>% # create a column which includes all the colnames ("names") and one column with the values ("value")
+    ggplot() + # plot the distribution
+        aes(x = value) +
+        geom_density() +
+        facet_wrap(~name, scales = "free") # scales "free" allows for different y axis limits
+
+```
+
+
+Vusialiue multiple line plots or x vx y scatter plots
+
+```{r}
+bikes %>% 
+    select(dteday, cnt, casual, registered) %>% # select all columns that should be plotted
+    pivot_longer(-dteday) %>% # Pivot all columns that will be plotted on the y axis by excluding teh column for the x -axis
+    ggplot() + # plit with facet_grid or facte_wrap
+        aes(x = dteday, y = value) +
+        geom_line() +
+        facet_grid(name~.)
+```
+
+
+
+
+
+###**Explore Missing Data**
+
+```{r}
+plot_NA <- function(df){
+df %>%
+  is.na() %>%
+  reshape2::melt() %>%
+  ggplot(aes(Var2, Var1, fill=value)) + 
+    geom_raster() + 
+    coord_flip() +
+    scale_y_continuous(NULL, expand = c(0, 0)) +
+    scale_fill_grey(name = "", 
+                    labels = c("Present", 
+                               "Missing")) +
+    xlab("Observation") +
+    theme(axis.text.y  = element_text(size = 4))
+}
+```
+
+
+
+
+```{r}
+bikes %>% 
+    select(-instant, -dteday) %>% 
+    cor() %>% 
+    as_tibble(rownames = "x") %>% 
+    pivot_longer(-x) %>% 
+    ggplot() +
+        aes(x = x, y = name, fill = value) +
+        geom_raster() +
+        scale_fill_gradient2(low = "purple", mid = "white",
+                             high = "orangered") +
+        labs(x = NULL, y = NULL) +
+        theme(axis.text.x = element_text(
+            angle = 90, hjust = 1, vjust = 0.5))
+```
+
+
+
+
+# Show the Predictors with near zero variance
+```{r}
+near_zero <- function(df){
+caret::nearZeroVar(df, saveMetrics = TRUE) %>% 
+  tibble::rownames_to_column() %>% 
+  filter(nzv)
+  }
+```
+
+
+```
+install.packages("installr")
+
+library(installr)
+
+updateR()``{r}``{r}
+
 ```
 
 
